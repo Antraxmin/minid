@@ -73,3 +73,10 @@ func (m *Manager) AddProcess(pid int) error {
 
 	return nil
 }
+
+func (m *Manager) Destroy() error {
+	if cgroupsV2 {
+		return os.RemoveAll(filepath.Join("/sys/fs/cgroup", m.Path))
+	}
+	return nil
+}
