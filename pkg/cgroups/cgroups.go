@@ -64,3 +64,12 @@ func (m *Manager) applyV2(cpuLimit float64, memoryLimit string) error {
 
 	return nil
 }
+
+func (m *Manager) AddProcess(pid int) error {
+	if cgroupsV2 {
+		cgroupPath := filepath.Join("/sys/fs/cgroup", m.Path)
+		return writeFile(filepath.Join(cgroupPath, "cgroup.procs"), strconv.Itoa(pid))
+	}
+
+	return nil
+}
