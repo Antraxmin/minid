@@ -45,3 +45,27 @@ func SetupVethPair(containerID, bridgeName string) error {
 
 	return nil
 }
+
+func ConfigureContainerNetwork(namespace, ifName string) error {
+	if err := executeCommandInNetNS(namespace, "ip", "link", "set", "lo", "up"); err != nil {
+		return fmt.Errorf("failed to activate lo interface: %v", err)
+	}
+
+	if err := executeCommandInNetNS(namespace, "ip", "link", "set", ifName, "name", "eth0"); err != nil {
+		return fmt.Errorf("failed to change interface name: %v", err)
+	}
+
+	if err := executeCommandInNetNS(namespace, "ip", "addr", "add", "10.0.0.2/24", "dev", "eth0"); err != nil {
+		return fmt.Errorf("failed to set IP address: %v", err)
+	}
+
+	if err := executeCommandInNetNS(namespace, "ip", "link", "set", "eth0", "up"); err != nil {
+		return fmt.Errorf("failed to activate eth0: %v", err)
+	}
+
+	if err := executeCommandInNetNS(namespace, "ip", "route", "add", "default", "via", "10.0.0.1"); err != nil {
+		return fmt.Errorf("failed to set default route: %v", err)
+	}
+
+	return nil
+}
